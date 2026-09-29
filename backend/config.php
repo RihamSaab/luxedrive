@@ -1,6 +1,4 @@
-
 <?php
-// PHP connection to SQLite database
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -10,67 +8,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+$creds = require __DIR__ . '/db_credentials.php';
+
 try {
-    $db_file = getenv('DB_PATH') ?: __DIR__ . "/car_rental.sqlite";
-    $conn = new PDO("sqlite:" . $db_file);
+    $dsn = "mysql:host={$creds['host']};dbname={$creds['db']};charset=utf8mb4";
+    $conn = new PDO($dsn, $creds['user'], $creds['pass']);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Cars table 
     $conn->exec("
         CREATE TABLE IF NOT EXISTS cars (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            brand TEXT NOT NULL,
-            type TEXT NOT NULL,
-            model TEXT NOT NULL,
-            year INTEGER NOT NULL,
-            price_per_day REAL NOT NULL,
-            passengers INTEGER,
-            transmission TEXT,
-            fuel_type TEXT,
-            image TEXT
-        )
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            brand VARCHAR(100) NOT NULL,
+            type VARCHAR(100) NOT NULL,
+            model VARCHAR(150) NOT NULL,
+            year INT NOT NULL,
+            price_per_day DECIMAL(10,2) NOT NULL,
+            passengers INT,
+            transmission VARCHAR(50),
+            fuel_type VARCHAR(50),
+            image VARCHAR(255)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
 
-    // Users table
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(100) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            role VARCHAR(20) DEFAULT 'user'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
 
-$conn->exec("
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT DEFAULT 'user' -- can be 'user' or 'admin'
-    )
-");
-
-    // Bookings table
     $conn->exec("
         CREATE TABLE IF NOT EXISTS bookings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            pickup_location TEXT NOT NULL,
-            pickup_date TEXT NOT NULL,
-            dropoff_location TEXT,
-            dropoff_date TEXT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(100) NOT NULL,
+            pickup_location VARCHAR(255) NOT NULL,
+            pickup_date VARCHAR(50) NOT NULL,
+            dropoff_location VARCHAR(255),
+            dropoff_date VARCHAR(50),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            car_info VARCHAR(255),
+            phone VARCHAR(50)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
 
-    // Add car_info / phone columns for existing databases (safe if already added)
-    try { $conn->exec("ALTER TABLE bookings ADD COLUMN car_info TEXT"); } catch (PDOException $e) { /* column exists */ }
-    try { $conn->exec("ALTER TABLE bookings ADD COLUMN phone TEXT"); } catch (PDOException $e) { /* column exists */ }
+    try { $conn->exec("ALTER TABLE bookings ADD COLUMN car_info VARCHAR(255)"); } catch (PDOException $e) { /* column exists */ }
+    try { $conn->exec("ALTER TABLE bookings ADD COLUMN phone VARCHAR(50)"); } catch (PDOException $e) { /* column exists */ }
 
-    // Track login attempts for rate limiting
     $conn->exec("
         CREATE TABLE IF NOT EXISTS login_attempts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            ip TEXT,
-            success INTEGER DEFAULT 0,
-            attempted_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(100) NOT NULL,
+            ip VARCHAR(45),
+            success TINYINT DEFAULT 0,
+            attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_login_attempts_uname_time (username, attempted_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_login_attempts_uname_time ON login_attempts(username, attempted_at)");
-
 
 } catch(PDOException $e) {
     die("DB error: " . $e->getMessage());

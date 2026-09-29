@@ -14,7 +14,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         SELECT COUNT(*) FROM login_attempts
         WHERE username = ?
         AND success = 0
-        AND attempted_at > datetime('now', '-{$WINDOW_MINUTES} minutes')
+        AND attempted_at > DATE_SUB(NOW(), INTERVAL {$WINDOW_MINUTES} MINUTE)
     ");
     $stmt->execute([$username]);
     $failures = (int)$stmt->fetchColumn();
