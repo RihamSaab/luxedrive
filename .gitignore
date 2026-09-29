@@ -16,6 +16,12 @@ build/
 .env.local
 .env.*.local
 
+# DB credentials (never commit real MySQL creds)
+backend/db_credentials.php
+
+# Deployment zip
+backend/backend.zip
+
 # Logs
 *.log
 npm-debug.log*
