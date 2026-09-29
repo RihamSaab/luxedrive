@@ -21,7 +21,7 @@ const handleSignup = async (e) => {
   formData.append("password", password);
 
   try {
-    const res = await fetch("http://localhost:8000/signup.php", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/signup.php`, {
       method: "POST",
       body: formData,
     });

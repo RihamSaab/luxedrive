@@ -30,7 +30,7 @@ export default function AddCarForm() {
     if (image) data.append("image", image);
 
     axios
-      .post("http://localhost:8000/addCar.php", data)
+      .post(`${import.meta.env.VITE_API_URL}/addCar.php`, data)
       .then((res) => {
         setStatus("success");
         setMessage(res.data.message || "Car added successfully");

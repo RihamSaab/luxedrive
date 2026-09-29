@@ -1,0 +1,5 @@
+.DS_Store
+*.log
+car_rental.sqlite
+upload/*
+!upload/.gitkeep

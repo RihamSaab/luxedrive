@@ -2,7 +2,7 @@
 header(header: "Content-Type: application/json");
 include "config.php";
 
-$targetDir = "upload/";
+$targetDir = getenv('UPLOAD_DIR') ?: "upload/";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // retrieve car details from POST request

@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 try {
-    $db_file = __DIR__ . "/car_rental.sqlite";
+    $db_file = getenv('DB_PATH') ?: __DIR__ . "/car_rental.sqlite";
     $conn = new PDO("sqlite:" . $db_file);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

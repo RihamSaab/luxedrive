@@ -151,7 +151,7 @@ const BookingSection = () => {
     try {
       setSubmitting(true);
       const res = await axios.post(
-        "http://localhost:8000/addBooking.php",
+        `${import.meta.env.VITE_API_URL}/addBooking.php`,
         formData
       );
 

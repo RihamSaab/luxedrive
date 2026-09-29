@@ -313,7 +313,7 @@ export default function CarCard({ car }) {
       setSubmitting(true);
       setErrorMsg("");
       const res = await axios.post(
-        "http://localhost:8000/addBooking.php",
+        `${import.meta.env.VITE_API_URL}/addBooking.php`,
         formData
       );
 
@@ -334,7 +334,7 @@ export default function CarCard({ car }) {
 
   return (
     <Card>
-      <CarImage src={`http://localhost:8000/${car.image}`} alt={car.model} />
+      <CarImage src={`${import.meta.env.VITE_API_URL}/${car.image}`} alt={car.model} />
 
       <Title>
         {car.brand} {car.model} {car.year}

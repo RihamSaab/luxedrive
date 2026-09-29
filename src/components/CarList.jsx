@@ -9,7 +9,7 @@ export default function CardList() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/getCars.php")
+      .get(`${import.meta.env.VITE_API_URL}/getCars.php`)
       .then((res) => setCars(res.data))
       .catch(() => {});
   }, []);

@@ -21,7 +21,7 @@ export default function YourBookings({ user }) {
     setLoading(true);
     axios
       .get(
-        `http://localhost:8000/getBookings.php?username=${encodeURIComponent(
+        `${import.meta.env.VITE_API_URL}/getBookings.php?username=${encodeURIComponent(
           user.username
         )}`
       )
