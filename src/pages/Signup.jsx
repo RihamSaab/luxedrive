@@ -64,6 +64,9 @@ const handleSignup = async (e) => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <Hint>
+            At least 8 characters, with uppercase, lowercase, a number, and a symbol.
+          </Hint>
 
           <Button type="submit">Sign Up</Button>
         </Form>
@@ -157,6 +160,13 @@ const Input = styled.input`
     border-color: #ffffff;
     outline: none;
   }
+`;
+
+const Hint = styled.p`
+  margin: -8px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+  color: #ddd;
 `;
 
 const Button = styled.button`

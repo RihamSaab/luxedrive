@@ -19,3 +19,12 @@ build/
 # Logs
 *.log
 npm-debug.log*
+
+# Database (never commit user data)
+*.sqlite
+*.sqlite3
+*.db
+
+# User-uploaded files (keep the folder, ignore contents)
+backend/upload/*
+!backend/upload/.gitkeep

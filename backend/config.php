@@ -59,6 +59,18 @@ $conn->exec("
     try { $conn->exec("ALTER TABLE bookings ADD COLUMN car_info TEXT"); } catch (PDOException $e) { /* column exists */ }
     try { $conn->exec("ALTER TABLE bookings ADD COLUMN phone TEXT"); } catch (PDOException $e) { /* column exists */ }
 
+    // Track login attempts for rate limiting
+    $conn->exec("
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            ip TEXT,
+            success INTEGER DEFAULT 0,
+            attempted_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+    $conn->exec("CREATE INDEX IF NOT EXISTS idx_login_attempts_uname_time ON login_attempts(username, attempted_at)");
+
 
 } catch(PDOException $e) {
     die("DB error: " . $e->getMessage());

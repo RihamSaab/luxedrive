@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { FiAlertCircle, FiCheckCircle, FiUploadCloud } from "react-icons/fi";
+import { FiAlertCircle, FiCheckCircle, FiUploadCloud, FiTrash2 } from "react-icons/fi";
 import bgCar from "../assets/images/car.png";
 
 export default function AddCarForm() {
@@ -18,10 +18,23 @@ export default function AddCarForm() {
   const [image, setImage] = useState(null);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState(null);
+  const [cars, setCars] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleFile = (e) => setImage(e.target.files[0]);
+
+  const fetchCars = useCallback(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/getCars.php`)
+      .then((res) => setCars(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setCars([]));
+  }, []);
+
+  useEffect(() => {
+    fetchCars();
+  }, [fetchCars]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,7 +47,12 @@ export default function AddCarForm() {
       .then((res) => {
         setStatus("success");
         setMessage(res.data.message || "Car added successfully");
-        setTimeout(() => window.location.reload(), 1200);
+        fetchCars();
+        setFormData({
+          brand: "", type: "", model: "", year: "",
+          price_per_day: "", passengers: "", transmission: "", fuel_type: "",
+        });
+        setImage(null);
       })
       .catch(() => {
         setStatus("error");
@@ -42,12 +60,27 @@ export default function AddCarForm() {
       });
   };
 
+  const handleDelete = (car) => {
+    if (!window.confirm(`Remove ${car.brand} ${car.model}?`)) return;
+    const form = new FormData();
+    form.append("id", car.id);
+    setDeletingId(car.id);
+    axios
+      .post(`${import.meta.env.VITE_API_URL}/deleteCar.php`, form)
+      .then(() => fetchCars())
+      .catch(() => {
+        setStatus("error");
+        setMessage("Failed to delete car.");
+      })
+      .finally(() => setDeletingId(null));
+  };
+
   return (
     <Wrapper>
       <Overlay />
       <Card>
-        <Title>Add a New Vehicle</Title>
-        <Subtitle>Expand your luxury fleet</Subtitle>
+        <Title>Fleet Management</Title>
+        <Subtitle>Add or remove vehicles from your luxury fleet</Subtitle>
 
         <Form onSubmit={handleSubmit}>
           <FormRow>
@@ -140,6 +173,39 @@ export default function AddCarForm() {
             {message}
           </Feedback>
         )}
+
+        <FleetSection>
+          <FleetTitle>Current Fleet</FleetTitle>
+          <FleetSubtitle>{cars.length} vehicle{cars.length === 1 ? "" : "s"} in the fleet</FleetSubtitle>
+
+          {cars.length === 0 ? (
+            <EmptyState>No vehicles yet. Add your first one above.</EmptyState>
+          ) : (
+            <FleetList>
+              {cars.map((car) => (
+                <FleetRow key={car.id}>
+                  <FleetThumb
+                    src={`${import.meta.env.VITE_API_URL}/${car.image}`}
+                    alt={car.model}
+                    onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
+                  />
+                  <FleetInfo>
+                    <FleetName>{car.brand} {car.model}</FleetName>
+                    <FleetMeta>{car.year} · {car.type} · ${car.price_per_day}/day</FleetMeta>
+                  </FleetInfo>
+                  <DeleteButton
+                    onClick={() => handleDelete(car)}
+                    disabled={deletingId === car.id}
+                    title="Remove vehicle"
+                  >
+                    <FiTrash2 />
+                    {deletingId === car.id ? "Removing..." : "Remove"}
+                  </DeleteButton>
+                </FleetRow>
+              ))}
+            </FleetList>
+          )}
+        </FleetSection>
       </Card>
     </Wrapper>
   );
@@ -281,6 +347,110 @@ const SubmitButton = styled.button`
   &:hover {
     background: rgba(255, 255, 255, 0.15);
     color: #ffffff;
+  }
+`;
+
+const FleetSection = styled.div`
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+`;
+
+const FleetTitle = styled.h3`
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: #ffffff;
+`;
+
+const FleetSubtitle = styled.p`
+  font-size: 13px;
+  opacity: 0.7;
+  margin: 0 0 20px;
+`;
+
+const EmptyState = styled.p`
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+`;
+
+const FleetList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 6px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+`;
+
+const FleetRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+`;
+
+const FleetThumb = styled.img`
+  width: 60px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+`;
+
+const FleetInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const FleetName = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const FleetMeta = styled.div`
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 2px;
+`;
+
+const DeleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 77, 77, 0.15);
+  color: #ff7979;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 77, 77, 0.25);
+    color: #ffb3b3;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 

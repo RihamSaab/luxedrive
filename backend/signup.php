@@ -12,6 +12,15 @@ header("Content-Type: application/json");
 
 include "config.php";
 
+function validatePasswordStrength($password) {
+    if (strlen($password) < 8) return "Password must be at least 8 characters";
+    if (!preg_match('/[A-Z]/', $password)) return "Password must contain an uppercase letter";
+    if (!preg_match('/[a-z]/', $password)) return "Password must contain a lowercase letter";
+    if (!preg_match('/[0-9]/', $password)) return "Password must contain a number";
+    if (!preg_match('/[^A-Za-z0-9]/', $password)) return "Password must contain a symbol";
+    return null;
+}
+
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username = $_POST['username'] ?? '';
@@ -19,6 +28,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if(!$username || !$password){
         echo json_encode(["success" => false, "message" => "Username and password are required"]);
+        exit;
+    }
+
+    $pwError = validatePasswordStrength($password);
+    if ($pwError) {
+        echo json_encode(["success" => false, "message" => $pwError]);
         exit;
     }
 

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { FiPlusCircle, FiShield } from "react-icons/fi";
+import { FiSettings, FiShield } from "react-icons/fi";
 
 export default function AdminBanner({ user }) {
   const navigate = useNavigate();
@@ -16,14 +16,14 @@ export default function AdminBanner({ user }) {
         <Text>
           <Title>Welcome back, {user.username}</Title>
           <Subtitle>
-            You're signed in as an admin. Manage the fleet by adding new vehicles.
+            You're signed in as an admin. Add or remove vehicles from your fleet.
           </Subtitle>
         </Text>
       </Left>
 
       <AddButton onClick={() => navigate("/addCars")}>
-        <FiPlusCircle className="icon" />
-        Add a Vehicle
+        <FiSettings className="icon" />
+        Manage Fleet
       </AddButton>
     </Banner>
   );
