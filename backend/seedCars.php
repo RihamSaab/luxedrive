@@ -44,9 +44,27 @@ foreach ($cars as $c) {
     $inserted++;
 }
 
+$adminUser = getenv('ADMIN_USERNAME');
+$adminPass = getenv('ADMIN_PASSWORD');
+
+if (!$adminUser && file_exists(__DIR__ . '/admin_config.php')) {
+    $adminCfg = require __DIR__ . '/admin_config.php';
+    $adminUser = $adminCfg['username'] ?? null;
+    $adminPass = $adminCfg['password'] ?? null;
+}
+
+$adminCreated = false;
+if ($adminUser && $adminPass) {
+    $hash = password_hash($adminPass, PASSWORD_DEFAULT);
+    $conn->prepare("DELETE FROM users WHERE username = ?")->execute([$adminUser]);
+    $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'admin')")->execute([$adminUser, $hash]);
+    $adminCreated = true;
+}
+
 echo json_encode([
     "success" => true,
-    "message" => "Seeded {$inserted} cars. Now DELETE this file.",
+    "message" => "Seeded {$inserted} cars" . ($adminCreated ? " and created admin '{$adminUser}'." : "."),
     "cars_inserted" => $inserted,
+    "admin_created" => $adminCreated,
 ]);
 ?>

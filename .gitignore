@@ -19,6 +19,9 @@ build/
 # DB credentials (never commit real MySQL creds)
 backend/db_credentials.php
 
+# Local admin credentials (production uses env vars)
+backend/admin_config.php
+
 # Deployment zip
 backend/backend.zip
 
