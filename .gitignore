@@ -34,3 +34,9 @@ npm-debug.log*
 # User-uploaded files (keep the folder, ignore contents)
 backend/upload/*
 !backend/upload/.gitkeep
+# Allow the seed car images to be committed
+!backend/upload/*_car*.jpg
+!backend/upload/*_car*.jpeg
+!backend/upload/*_car*.png
+!backend/upload/*_car*.avif
+!backend/upload/*_testCar*.jpg
