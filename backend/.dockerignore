@@ -1,0 +1,7 @@
+.DS_Store
+*.log
+car_rental.sqlite
+upload/*
+!upload/.gitkeep
+db_credentials.php
+db_credentials.example.php
