@@ -5,7 +5,14 @@
 header("Content-Type: application/json");
 include "config.php";
 
-$SECRET = "luxe-seed-2026-x9k2pQ";
+$SECRET = getenv('SEED_SECRET') ?: '';
+
+if ($SECRET === '') {
+    http_response_code(500);
+    echo json_encode(["success" => false, "message" => "SEED_SECRET env var not set"]);
+    exit;
+}
+
 $secret = $_GET['secret'] ?? '';
 
 if ($secret !== $SECRET) {
